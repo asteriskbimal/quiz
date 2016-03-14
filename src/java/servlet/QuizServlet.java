@@ -30,73 +30,72 @@ public class QuizServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-  throws ServletException, IOException
-  {         
-        Quiz quiz=null;// create a quiz object
+            throws ServletException, IOException {
+        Quiz quiz = null;// create a quiz object
 
-    if(request.getSession().getAttribute("quiz")==null){        // check if the session exists or not
-       quiz=new Quiz();                                     // instanciate quiz object
-       request.getSession().setAttribute("quiz", quiz);      //create a session with quiz value and attribute quiz
-       genQuizPage(quiz,response.getWriter(),quiz.getCurrentQuestion(), false,"");  //generate quiz page as per the parameters             
-     }    
-   }
-  
-  protected void doPost(HttpServletRequest request, HttpServletResponse response)
-  throws ServletException, IOException
-  {     
-       Quiz quiz=(Quiz)request.getSession().getAttribute("quiz");
-       boolean correct=false; 
-       String answer=request.getParameter("txtAnswer"); 
-       
-       if(quiz.getIndex()==quiz.getNumQuestions()-1){
-         genQuizOverPage(response.getWriter());  
-       }
-       else {
-        if(request.getParameter("btnNext")!=null){
+               // check if the session exists or not
+            quiz = new Quiz();                                     // instanciate quiz object
+            request.getSession().setAttribute("quiz", quiz);      //create a session with quiz value and attribute quiz
+            genQuizPage(quiz, response.getWriter(), quiz.getCurrentQuestion(), false, "");  //generate quiz page as per the parameters             
+        
+    }
 
-           if(answer!=null&&quiz.isCorrect(answer)){
-               quiz.scoreAnswer();
-               correct=true;
-           }
-           else{
-               correct=false; 
-           }
-        
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        Quiz quiz = (Quiz) request.getSession().getAttribute("quiz");
+        boolean correct = false;
+        String answer = request.getParameter("txtAnswer");
+
+        if (quiz.getIndex() == quiz.getNumQuestions() - 1) {
+            genQuizOverPage(response.getWriter());
+        } else {
+            if (request.getParameter("btnNext") != null) {
+
+                if (answer != null && quiz.isCorrect(answer)) {
+                    quiz.scoreAnswer();
+                    correct = true;
+                } else {
+                    correct = false;
+                }
+
+            } 
+            else if (request.getParameter("btn") != null){
+                response.sendRedirect("/");
+            }else {
+                quiz.setIndex(0);
+            }
+
+            boolean ans_flag = quiz.isCorrect(answer);
+            if (correct) {
+                genQuizPage(quiz, response.getWriter(), quiz.getCurrentQuestion(), quiz.isCorrect(answer), answer);
+            } else {
+                genQuizPage(quiz, response.getWriter(), quiz.getCurrentQuestion(), !ans_flag, answer);
+            }
         }
-        else{   
-            quiz.setIndex(0);     
-        } 
-        
-        boolean ans_flag=quiz.isCorrect(answer);
-        if(correct){
-               genQuizPage(quiz,response.getWriter(),quiz.getCurrentQuestion(), quiz.isCorrect(answer),answer);
-        }
-        else{  
-               genQuizPage(quiz,response.getWriter(),quiz.getCurrentQuestion(), !ans_flag,answer);    
-        }   
-       }
-  }
-  
-  private void genQuizOverPage(PrintWriter out) {
+    }
+
+    private void genQuizOverPage(PrintWriter out) {
         out.print("<html> ");
-	out.print("<head >");
-	out.print("<title>NumberQuiz is over</title> ");
-	out.print("</head> ");
-	out.print("<body> ");
-	out.print("<p style='color:red'>The number quiz is over!</p>	</body> ");
+        out.print("<head >");
+        out.print("<title>NumberQuiz is over</title> ");
+        out.print("</head> ");
+        out.print("<body> ");
+        out.print("<p style='color:red'>The number quiz is over!</p>	</body> ");
         out.print("</html> ");
-  }
-  
-   private void genQuizPage(Quiz sessQuiz, PrintWriter out, String currQuest, boolean error, String answer) {
-        
+    }
+
+    private void genQuizPage(Quiz sessQuiz, PrintWriter out, String currQuest, boolean error, String answer) {
+
         out.print("<html>");
-	out.print("<head>");
-	out.print("<title>NumberQuiz</title>");
-	out.print("</head>");
-	out.print("<body>");
-	out.print("<form method='post'>");
-	out.print("<h3>Have fun with NumberQuiz!</h3>");
+        out.print("<head>");
+        out.print("<title>NumberQuiz</title>");
+        out.print("</head>");
+        out.print("<body>");
+        out.print("<form method='post'>");
+        out.print("<h3>Have fun with NumberQuiz!</h3>");
         out.print("<p>Your current score is: ");
         out.print(sessQuiz.getNumCorrect() + "</br></br>");
         out.print("<p>Guess the next number in the sequence! ");
@@ -109,9 +108,8 @@ public class QuizServlet extends HttpServlet {
             out.print("<p style='color:red'>Your last answer was not correct! Please try again</p> ");
         }
         out.print("<p><input type='submit' name='btnNext' value='Next' /></p> ");
+        out.print("<p><input type='submit' name='btn' value='Restart' /></p>");
         out.print("</form>");
         out.print("</body></html>");
     }
 }
-
-
